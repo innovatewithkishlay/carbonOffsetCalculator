@@ -1,7 +1,11 @@
 import streamlit as st
 import requests
 import certifi
+from dotenv import load_dotenv
 import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Expanded emission factors (example values, replace with API integration)
 EMISSION_FACTORS = {
@@ -9,8 +13,8 @@ EMISSION_FACTORS = {
 }
 
 # Gemini API Configuration
-GEMINI_API_KEY = os.getenv("AIzaSyCW1hNhRwg2603a6t8Zyk7GptEvocBnZu0")  # Use environment variable
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Load API key from .env file
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta2/models/gemini-pro:generateMessage"
 
 # Streamlit App Configuration
 st.set_page_config(layout="wide", page_title="Personal Carbon Calculator")
@@ -77,14 +81,14 @@ elif page == "Chatbot":
         if user_input:
             headers = {"Content-Type": "application/json"}
             params = {"key": GEMINI_API_KEY}
-            data = {"contents": [{"parts": [{"text": user_input}]}]}
+            data = {"prompt": {"text": user_input}}
             
             try:
                 response = requests.post(GEMINI_URL, headers=headers, json=data, params=params, verify=certifi.where())
                 response_data = response.json()
 
                 if response.status_code == 200 and "candidates" in response_data:
-                    bot_reply = response_data["candidates"][0]["content"]["parts"][0]["text"]
+                    bot_reply = response_data["candidates"][0]["content"]
                 else:
                     bot_reply = "Sorry, I couldn't understand that."
                 
@@ -92,3 +96,5 @@ elif page == "Chatbot":
                 bot_reply = f"Error: {str(e)}"
             
             st.text_area("Bot:", bot_reply, height=100, disabled=True)
+        else:
+            st.warning("Please enter a message.")
