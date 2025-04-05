@@ -75,20 +75,71 @@ elif page == "Chatbot":
     st.header("💬 AI Chatbot")
     st.write("Ask me anything about carbon footprint, sustainability, or climate change!")
 
-    # Chatbot container for messages
-    chat_container = st.container()
-
-    # Input box for user message
-    with st.form(key="chat_form"):
-        user_input = st.text_input("Type your message here:", key="user_input", placeholder="Ask me anything...")
-        submit_button = st.form_submit_button("Send")
+    # Add a "Clear Chat" button at the top
+    clear_chat = st.button("🗑️ Clear Chat", key="clear_chat", help="Clear the chat history")
+    if clear_chat:
+        st.session_state.chat_history = []
 
     # Initialize session state to store chat history
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
+    # Chat container for displaying messages
+    chat_container = st.container()
+
+    # Display chat history
+    with chat_container:
+        for message in st.session_state.chat_history:
+            if message["role"] == "user":
+                st.markdown(
+                    f"<div style='text-align: right; background-color: #DCF8C6; padding: 10px; border-radius: 10px; margin: 5px;'>"
+                    f"<strong>You:</strong> {message['content']}</div>",
+                    unsafe_allow_html=True,
+                )
+            elif message["role"] == "bot":
+                st.markdown(
+                    f"<div style='text-align: left; background-color: #F1F0F0; padding: 10px; border-radius: 10px; margin: 5px;'>"
+                    f"<strong>Bot:</strong> {message['content']}</div>",
+                    unsafe_allow_html=True,
+                )
+
+    # Separator line
+    st.markdown("---")
+
+    # Fixed input box and send button at the bottom
+    st.markdown(
+        """
+        <style>
+        .fixed-input-box {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 10px;
+            box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.container():
+        st.markdown('<div class="fixed-input-box">', unsafe_allow_html=True)
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            user_input = st.text_input(
+                "Type your message here:",
+                key="user_input",
+                placeholder="Ask me anything...",
+                label_visibility="collapsed",
+            )
+        with col2:
+            send_button = st.button("Send", use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
     # Handle user input and send to backend
-    if submit_button and user_input:
+    if send_button and user_input:
         # Call the Node.js chatbot backend
         chatbot_backend_url = "http://localhost:5001/chatbot"
         try:
@@ -107,11 +158,3 @@ elif page == "Chatbot":
         # Add user input and bot reply to chat history
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         st.session_state.chat_history.append({"role": "bot", "content": bot_reply})
-
-    # Display chat history
-    with chat_container:
-        for message in st.session_state.chat_history:
-            if message["role"] == "user":
-                st.markdown(f"**You:** {message['content']}")
-            elif message["role"] == "bot":
-                st.markdown(f"**Bot:** {message['content']}")
