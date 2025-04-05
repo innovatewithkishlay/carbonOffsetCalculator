@@ -75,26 +75,43 @@ elif page == "Chatbot":
     st.header("💬 AI Chatbot")
     st.write("Ask me anything about carbon footprint, sustainability, or climate change!")
 
-    user_input = st.text_input("You:", key="user_input")
+    # Chatbot container for messages
+    chat_container = st.container()
 
-    if st.button("Send"):
-        if user_input:
-            headers = {"Content-Type": "application/json"}
-            params = {"key": GEMINI_API_KEY}
-            data = {"prompt": {"text": user_input}}
-            
-            try:
-                response = requests.post(GEMINI_URL, headers=headers, json=data, params=params, verify=certifi.where())
-                response_data = response.json()
+    # Input box for user message
+    with st.form(key="chat_form"):
+        user_input = st.text_input("Type your message here:", key="user_input", placeholder="Ask me anything...")
+        submit_button = st.form_submit_button("Send")
 
-                if response.status_code == 200 and "candidates" in response_data:
-                    bot_reply = response_data["candidates"][0]["content"]
-                else:
-                    bot_reply = "Sorry, I couldn't understand that."
-                
-            except requests.exceptions.RequestException as e:
-                bot_reply = f"Error: {str(e)}"
-            
-            st.text_area("Bot:", bot_reply, height=100, disabled=True)
-        else:
-            st.warning("Please enter a message.")
+    # Initialize session state to store chat history
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    # Handle user input and send to backend
+    if submit_button and user_input:
+        # Call the Node.js chatbot backend
+        chatbot_backend_url = "http://localhost:5001/chatbot"
+        try:
+            # Send user input to the chatbot backend
+            response = requests.post(chatbot_backend_url, json={"prompt": user_input})
+            response_data = response.json()
+
+            if response.status_code == 200:
+                # Get the chatbot's reply
+                bot_reply = response_data.get("reply", "No reply received.")
+            else:
+                bot_reply = f"Error: {response_data.get('error', 'Unknown error')}"
+        except requests.exceptions.RequestException as e:
+            bot_reply = f"Error: {str(e)}"
+
+        # Add user input and bot reply to chat history
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        st.session_state.chat_history.append({"role": "bot", "content": bot_reply})
+
+    # Display chat history
+    with chat_container:
+        for message in st.session_state.chat_history:
+            if message["role"] == "user":
+                st.markdown(f"**You:** {message['content']}")
+            elif message["role"] == "bot":
+                st.markdown(f"**Bot:** {message['content']}")
