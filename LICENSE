@@ -1,0 +1,33 @@
+---
+
+### Key Additions:
+
+1. **Explicit Running Scripts**:
+
+   - Added `node server.js` for the chatbot backend.
+   - Added `streamlit run app10.py` for the Streamlit app.
+
+2. **Access Instructions**:
+
+   - Explained how to access the project on `http://localhost:8501` after starting both components.
+
+3. **Clear Structure**:
+   - The steps are now clear and easy to follow for setting up and running the project.
+
+Let me know if you need further adjustments!---
+
+### Key Additions:
+
+1. **Explicit Running Scripts**:
+
+   - Added `node server.js` for the chatbot backend.
+   - Added `streamlit run app10.py` for the Streamlit app.
+
+2. **Access Instructions**:
+
+   - Explained how to access the project on `http://localhost:8501` after starting both components.
+
+3. **Clear Structure**:
+   - The steps are now clear and easy to follow for setting up and running the project.
+
+Let me know if you need further adjustments!
